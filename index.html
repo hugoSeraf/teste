@@ -544,15 +544,33 @@
 
         audio.addEventListener('loadedmetadata', () => { audio.currentTime = tempoInicio; });
 
+        // 👇 A MÁGICA DE PULAR A SENHA SE ELA VOLTAR DE OUTRA ABA 👇
+        window.addEventListener('DOMContentLoaded', (event) => {
+            if (localStorage.getItem('senhaDesbloqueada') === 'true') {
+                document.getElementById("tela-bloqueio").style.display = "none";
+                document.getElementById("conteudo-principal").style.display = "block";
+                setTimeout(criarEstrelas, 100);
+                iniciarChuvaPetalas();
+                checarMissoes();
+                
+                // Tenta tocar a música (o navegador pode bloquear até ela interagir)
+                audio.currentTime = tempoInicio;
+                audio.play().then(() => {
+                    btnPlay.innerHTML = "🎶 Tocando sua música favorita";
+                }).catch(() => { console.log("Aguardando play manual"); });
+            }
+        });
+
         function verificarSenha() {
             const palpite = document.getElementById("senha-amor").value.toLowerCase().trim();
             const senhasCertas = ["eu", "amoreco", "giselli", "amor", "sua rainha"];
             
-            // 👇 SENHA SECRETA PARA VOCÊ ZERAR A MEMÓRIA DO SEU CELULAR 👇
+            // SENHA SECRETA PARA VOCÊ ZERAR A MEMÓRIA DO SEU CELULAR
             if (palpite === "limpar") {
                 localStorage.clear();
-                alert("Memória apagada! Agora você vai ver o site do zero, exatamente como ela vai ver na primeira vez.");
+                alert("Memória apagada! O site foi zerado com sucesso.");
                 document.getElementById("senha-amor").value = "";
+                location.reload(); // Recarrega a tela na hora para aplicar
                 return;
             }
 
@@ -562,6 +580,9 @@
             }
 
             if (acertou || palpite.length > 3) {
+                // 👇 SALVA O PASSE VIP NA MEMÓRIA 👇
+                localStorage.setItem('senhaDesbloqueada', 'true');
+                
                 document.getElementById("tela-bloqueio").style.display = "none";
                 document.getElementById("conteudo-principal").style.display = "block";
                 setTimeout(criarEstrelas, 100); 
@@ -570,7 +591,7 @@
                 }
                 iniciarChuvaPetalas();
                 
-                checarMissoes(); // Dispara a checagem no carregamento
+                checarMissoes(); 
             } else {
                 document.getElementById("erro-senha").style.display = "block";
             }
