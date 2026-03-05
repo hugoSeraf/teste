@@ -558,7 +558,7 @@
     </div>
 
     <script>
-        // --- 1. TELA DE BLOQUEIO E MÚSICA ---
+      // --- 1. TELA DE BLOQUEIO E MÚSICA ---
         const audio = document.getElementById("musica-fundo");
         const btnPlay = document.getElementById("botao-play");
         const tempoInicio = 92; 
@@ -566,11 +566,12 @@
 
         audio.addEventListener('loadedmetadata', () => { audio.currentTime = tempoInicio; });
 
+        // 👇 AGORA USAMOS sessionStorage (Apaga quando fecha a aba!) 👇
         window.addEventListener('DOMContentLoaded', (event) => {
-            if (localStorage.getItem('senhaDesbloqueada') === 'true') {
+            if (sessionStorage.getItem('senhaDesbloqueada') === 'true') {
                 document.getElementById("tela-bloqueio").style.display = "none";
                 document.getElementById("conteudo-principal").style.display = "block";
-                document.getElementById("contador-ee").style.display = "block"; // Mostra o contador de segredos
+                document.getElementById("contador-ee").style.display = "block"; 
                 setTimeout(criarEstrelas, 100);
                 iniciarChuvaPetalas();
                 checarMissoes();
@@ -587,8 +588,9 @@
             const palpite = document.getElementById("senha-amor").value.toLowerCase().trim();
             const senhasCertas = ["eu", "amoreco", "giselli", "amor", "sua rainha"];
             
+            // SENHA SECRETA PARA VOCÊ ZERAR A MEMÓRIA DO SEU CELULAR
             if (palpite === "limpar") {
-                localStorage.clear();
+                sessionStorage.clear(); // Mudou para sessionStorage aqui também
                 alert("Memória apagada! O site foi zerado com sucesso.");
                 document.getElementById("senha-amor").value = "";
                 location.reload(); 
@@ -601,11 +603,12 @@
             }
 
             if (acertou || palpite.length > 3) {
-                localStorage.setItem('senhaDesbloqueada', 'true');
+                // 👇 SALVA O PASSE VIP NA SESSÃO 👇
+                sessionStorage.setItem('senhaDesbloqueada', 'true');
                 
                 document.getElementById("tela-bloqueio").style.display = "none";
                 document.getElementById("conteudo-principal").style.display = "block";
-                document.getElementById("contador-ee").style.display = "block"; // Revela o contador
+                document.getElementById("contador-ee").style.display = "block"; 
                 setTimeout(criarEstrelas, 100); 
                 if (audio.paused) { 
                     audio.currentTime = tempoInicio; audio.play(); btnPlay.innerHTML = "🎶 Tocando sua música favorita"; 
@@ -628,22 +631,22 @@
         audio.ontimeupdate = () => { if (audio.currentTime >= tempoFim) { audio.currentTime = tempoInicio; audio.play(); } };
 
 
-        // 👇👇 LÓGICA DOS 5 EASTER EGGS (SEGREDOS) 👇👇
+        // 👇👇 LÓGICA DOS 5 EASTER EGGS (USANDO SESSIONSTORAGE) 👇👇
         const totalEE = 5;
         let cliquesTitulo = 0;
 
         function atualizarContadorEE() {
             let achados = 0;
-            if(localStorage.getItem('ee_foto') === 'true') achados++;
-            if(localStorage.getItem('ee_coroa') === 'true') achados++;
-            if(localStorage.getItem('ee_titulo') === 'true') achados++;
-            if(localStorage.getItem('ee_cronometro') === 'true') achados++;
-            if(localStorage.getItem('ee_secreto') === 'true') achados++;
+            if(sessionStorage.getItem('ee_foto') === 'true') achados++;
+            if(sessionStorage.getItem('ee_coroa') === 'true') achados++;
+            if(sessionStorage.getItem('ee_titulo') === 'true') achados++;
+            if(sessionStorage.getItem('ee_cronometro') === 'true') achados++;
+            if(sessionStorage.getItem('ee_secreto') === 'true') achados++;
 
             document.getElementById('num-ee').innerText = achados;
 
-            if(achados === totalEE && localStorage.getItem('ee_completou') !== 'true') {
-                localStorage.setItem('ee_completou', 'true');
+            if(achados === totalEE && sessionStorage.getItem('ee_completou') !== 'true') {
+                sessionStorage.setItem('ee_completou', 'true');
                 setTimeout(() => {
                     alert("🏆 VOCÊ ACHOU TODOS OS SEGREDOS DO SITE! Parabéns, curiosa mais linda do mundo! Te amo infinitamente!");
                     confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
@@ -652,8 +655,8 @@
         }
 
         function descobrirEE(id, mensagem) {
-            if(localStorage.getItem('ee_' + id) !== 'true') {
-                localStorage.setItem('ee_' + id, 'true');
+            if(sessionStorage.getItem('ee_' + id) !== 'true') {
+                sessionStorage.setItem('ee_' + id, 'true');
                 alert("🔍 Segredo Encontrado: " + mensagem);
                 const contador = document.getElementById('contador-ee');
                 contador.classList.add('ee-achado-anim');
@@ -663,7 +666,7 @@
             }
         }
 
-        // EE 1: Clicar na Foto (Modificado do original)
+        // EE 1: Clicar na Foto
         function ativarGlowFoto() {
             descobrirEE('foto', 'O brilho da mulher da minha vida! ✨');
             const foto = document.getElementById("foto-principal"); const texto = document.getElementById("texto-secreto");
@@ -675,7 +678,7 @@
 
         // EE 2: Clicar na Coroa
         function cliqueCoroa(event) {
-            event.stopPropagation(); // Impede de ativar o brilho da foto junto
+            event.stopPropagation(); 
             const coroa = document.querySelector('.coroa-rainha');
             coroa.classList.add('spin-anim');
             setTimeout(() => coroa.classList.remove('spin-anim'), 1000);
@@ -690,13 +693,13 @@
             }
         }
 
-        // EE 4: Clicar no Cronômetro
+        // EE 4: Clicar no Cronômetro (COM O SEU AJUSTE DE 7 SEGUNDOS)
         function cliqueCronometro() {
             descobrirEE('cronometro', 'E que esse tempo se multiplique por mil! ⏳❤️');
             const texto = document.getElementById("tempo-junto");
             const textoOriginal = texto.innerHTML;
             texto.innerHTML = "Para todo o sempre! ❤️";
-            setTimeout(() => { texto.innerHTML = textoOriginal; }, 8000);
+            setTimeout(() => { texto.innerHTML = textoOriginal; }, 7000); 
         }
 
         // EE 5: O Ponto Secreto Transparente
@@ -705,40 +708,40 @@
         }
 
 
-        // --- SISTEMA DE MISSÕES (OBRIGA A ORDEM EXATA) ---
+        // --- SISTEMA DE MISSÕES (USANDO SESSIONSTORAGE) ---
         function clicarAlbum(e) {
             e.preventDefault();
-            localStorage.setItem('viuAlbum', 'true');
+            sessionStorage.setItem('viuAlbum', 'true');
             checarMissoes();
             setTimeout(() => { window.location.href = 'album.html'; }, 150);
         }
 
         function clicarGalaxia(e) {
             e.preventDefault();
-            if (localStorage.getItem('viuAlbum') !== 'true') {
+            if (sessionStorage.getItem('viuAlbum') !== 'true') {
                 alert("Ei apressadinha! Tem que ver nosso Álbum de Fotos primeiro! 📸❤️");
                 return;
             }
-            localStorage.setItem('viuGalaxia', 'true');
+            sessionStorage.setItem('viuGalaxia', 'true');
             checarMissoes();
             setTimeout(() => { window.location.href = 'galaxia.html'; }, 150);
         }
 
         function clicarPai(e) {
             e.preventDefault();
-            if (localStorage.getItem('viuGalaxia') !== 'true') {
+            if (sessionStorage.getItem('viuGalaxia') !== 'true') {
                 alert("Calminha aí, amoreco! Você precisa visitar nossa Galáxia primeiro! 🌌❤️");
                 return;
             }
-            localStorage.setItem('viuPai', 'true');
+            sessionStorage.setItem('viuPai', 'true');
             abrirModalPai();
             checarMissoes();
         }
 
         function checarMissoes() {
-            const viuAlbum = localStorage.getItem('viuAlbum') === 'true';
-            const viuGalaxia = localStorage.getItem('viuGalaxia') === 'true';
-            const viuPai = localStorage.getItem('viuPai') === 'true';
+            const viuAlbum = sessionStorage.getItem('viuAlbum') === 'true';
+            const viuGalaxia = sessionStorage.getItem('viuGalaxia') === 'true';
+            const viuPai = sessionStorage.getItem('viuPai') === 'true';
 
             if (viuAlbum) {
                 let div = document.getElementById('check-album');
@@ -753,7 +756,6 @@
                 if(div) { div.innerHTML = "✅ 3. A Estrela que te Ilumina (Concluído)"; div.classList.add("missao-concluida"); }
             }
 
-            // Desbloqueia a Primeira Etapa da Surpresa (A Pergunta Fugitiva)
             if (viuAlbum && viuGalaxia && viuPai) {
                 let painelMissoes = document.getElementById('area-missoes');
                 if(painelMissoes) painelMissoes.style.display = 'none'; 
@@ -906,9 +908,11 @@
         function iniciarLeitura(e) {
             e.preventDefault(); 
             btnDigital.classList.add("scanning");
+            
             if (navigator.vibrate) navigator.vibrate(50); 
             
             let inicio = Date.now();
+            
             progressoInterval = setInterval(() => {
                 let tempoPassado = Date.now() - inicio;
                 let porcentagem = Math.min((tempoPassado / tempoNecessario) * 100, 100);
@@ -940,6 +944,7 @@
             
             document.getElementById("titulo-pedido").style.display = "none";
             document.getElementById("area-sensor").style.display = "none";
+            
             document.getElementById("mensagem-aceitou").style.display = "block";
             
             var duration = 5000; var end = Date.now() + duration;
@@ -952,4 +957,5 @@
     </script>
 </body>
 </html>
+
 
