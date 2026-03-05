@@ -381,7 +381,7 @@
             text-align: center; margin: 0 auto; width: 95%; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
         }
 
-        /* 👇 ÁREA DE MISSÕES (BLOQUEIO) 👇 */
+        /* 👇 ÁREA DE MISSÕES (BLOQUEIO SEGURO PARA CELULAR) 👇 */
         #area-missoes {
             background: rgba(0, 0, 0, 0.6); padding: 20px; border-radius: 15px;
             border: 2px dashed #ffb3c6; max-width: 350px; margin: 40px auto;
@@ -391,18 +391,18 @@
         .missao-item { font-weight: bold; margin: 10px 0; font-size: 1.1em; display: flex; align-items: center; gap: 10px;}
         .missao-concluida { color: #1db954; text-decoration: line-through; opacity: 0.8; }
 
-        /* 👇 BRINCADEIRA DA PERGUNTA FUGITIVA (NOVA) 👇 */
+        /* 👇 BRINCADEIRA DA PERGUNTA FUGITIVA (A ETAPA DE DESAFIO) 👇 */
         #container-pergunta-fugitiva {
-            display: none; /* Começa escondido! */
+            display: none; /* Começa escondido! Só revela quando zerar as missões */
             margin: 40px auto; position: relative; height: 250px; z-index: 10; max-width: 400px;
             animation: surgirAposDesbloqueio 1s ease-out;
         }
 
         @keyframes surgirAposDesbloqueio { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* 👇 CSS DO PEDIDO BIOMÉTRICO (Escondido no início) 👇 */
+        /* 👇 CSS DO PEDIDO BIOMÉTRICO (O GRANDE FINAL) 👇 */
         #container-biometria {
-            display: none; /* Começa escondido! */
+            display: none; /* Começa escondido! Só revela quando ela vencer a pergunta fugitiva */
             margin: 40px auto; padding: 20px; position: relative; max-width: 400px; z-index: 10;
             animation: surgirAposDesbloqueio 1s ease-out;
         }
@@ -506,7 +506,7 @@
         <div id="container-pergunta-fugitiva">
             <h2 style="margin-bottom: 30px;">Amoreco quer realmente descobrir? 😏</h2>
             <button id="btn-sim-foge" class="botao-estilo" style="position: absolute; left: 30%; top: 50%; transition: 0.2s; z-index: 20;">SIM!</button>
-            <button id="btn-nao-foge" class="botao-estilo" style="position: absolute; left: 55%; top: 50%; background: #555; z-index: 15;" onclick="alert('Ah, para de graça, tenta clicar no sim!')">NÃO</button>
+            <button id="btn-nao-foge" class="botao-estilo" style="position: absolute; left: 55%; top: 50%; background: #555; z-index: 15;" onclick="alert('Ah, para de graça, tenta encostar no sim!')">NÃO</button>
         </div>
 
         <div id="container-biometria">
@@ -561,7 +561,8 @@
                     audio.currentTime = tempoInicio; audio.play(); btnPlay.innerHTML = "🎶 Tocando sua música favorita"; 
                 }
                 iniciarChuvaPetalas();
-                checarMissoes();
+                
+                checarMissoes(); // Dispara a checagem no carregamento
             } else {
                 document.getElementById("erro-senha").style.display = "block";
             }
@@ -575,7 +576,8 @@
         };
         audio.ontimeupdate = () => { if (audio.currentTime >= tempoFim) { audio.currentTime = tempoInicio; audio.play(); } };
 
-        // --- SISTEMA DE MISSÕES (DESBLOQUEIO) ---
+
+        // --- SISTEMA DE MISSÕES (MÉTODO SEGURO DE CELULAR COM SETTIMEOUT MANTIDO!) ---
         function marcarMissao(nomeDaMissao) {
             localStorage.setItem(nomeDaMissao, 'true');
             checarMissoes();
@@ -611,7 +613,7 @@
                 if(painelMissoes) painelMissoes.style.display = 'none'; 
                 
                 let painelPergunta = document.getElementById('container-pergunta-fugitiva');
-                // Só mostra se ainda não tiver passado pra parte da biometria
+                // Só mostra a Pergunta se a Biometria ainda NÃO tiver sido revelada
                 if(painelPergunta && document.getElementById('container-biometria').style.display !== 'block') {
                     painelPergunta.style.display = 'block'; 
                 }
@@ -619,6 +621,7 @@
         }
 
         window.addEventListener('pageshow', function() { checarMissoes(); });
+
 
         // --- LÓGICA DO BOTÃO FUGITIVO (10 TENTATIVAS) ---
         const btnSimFoge = document.getElementById("btn-sim-foge");
@@ -628,15 +631,14 @@
 
         function interagirComSim(e) {
             if (tentativasSim < 10) {
-                if (e) e.preventDefault(); // Impede o click/toque de registrar
+                if (e) e.preventDefault(); // Impede o dedo de clicar antes da hora
                 
                 const containerW = containerFuga.offsetWidth;
                 const containerH = containerFuga.offsetHeight;
                 const simW = btnSimFoge.offsetWidth;
                 const simH = btnSimFoge.offsetHeight;
                 
-                // Área segura (Evita que o botão suba pra cima do título H2)
-                const topoSeguro = 60; 
+                const topoSeguro = 60; // Para o botão não subir por cima do título
 
                 let novoX = Math.random() * (containerW - simW);
                 let novoY = topoSeguro + Math.random() * (containerH - simH - topoSeguro);
@@ -646,25 +648,26 @@
                 
                 tentativasSim++;
                 
+                // NA DÉCIMA VEZ: O botão desiste, volta pro lugar e deixa clicar!
                 if (tentativasSim >= 10) {
                     btnSimFoge.innerHTML = "Pode clicar! ❤️";
+                    btnSimFoge.style.top = "50%";
+                    btnSimFoge.style.left = "30%";
                 }
             } else if (e && e.type === "click") {
                 // ACERTOU O CLIQUE DEPOIS DAS 10 VEZES! MÁGICA ACONTECE AQUI:
                 containerFuga.style.display = "none"; // Some com a brincadeira
                 document.getElementById("container-biometria").style.display = "block"; // Revela o pedido oficial!
                 
-                // Joga a tela pra baixo pra ela ver o sensor nascendo
-                setTimeout(() => {
-                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                }, 100);
+                // Rola a tela pra baixo pra ela ver o sensor nascendo
+                setTimeout(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 100);
             }
         }
 
-        // Foge ao tentar encostar ou passar o mouse
+        // Eventos para fugir
         btnSimFoge.addEventListener("mouseover", (e) => { if(tentativasSim < 10) interagirComSim(e); });
         btnSimFoge.addEventListener("touchstart", (e) => { if(tentativasSim < 10) interagirComSim(e); }, {passive: false});
-        // Se clicar, checa se já tentou 10 vezes para liberar a próxima fase
+        // O evento de clique só funciona na 10ª vez
         btnSimFoge.addEventListener("click", interagirComSim);
 
 
@@ -706,7 +709,7 @@
         document.addEventListener("mousemove", (e) => { const agora = Date.now(); if (agora - ultimoCoracao > tempoEspera) { spawnHeart(e.clientX, e.clientY); ultimoCoracao = agora; } });
         document.addEventListener("touchmove", (e) => { const agora = Date.now(); if (agora - ultimoCoracao > tempoEspera) { spawnHeart(e.touches[0].clientX, e.touches[0].clientY); ultimoCoracao = agora; } });
 
-        // --- CARTA, MOTIVOS E EXTRAS ---
+        // --- CARTA E MOTIVOS ---
         const mensagem = "Feliz Dia das Mulheres, meu amor! Você é a mulher mais especial da minha vida e o meu maior desejo é ter você sempre ao meu lado. Sei que este não é o maior dos presentes, mas cada detalhe foi feito de coração, com muito esforço e carinho, pensando unicamente em você. Eu te amo infinitamente! Aproveite este seu cantinho... ❤️";
         let charIndex = 0;
         function digitar() {
@@ -729,6 +732,7 @@
             }, 400);
         }
 
+        // --- UTILIDADES EXTRAS ---
         function atualizarCronometro() {
             const d = new Date() - new Date(2026, 0, 31, 3, 53, 0); 
             document.getElementById("tempo-junto").innerHTML = `${Math.floor(d / 86400000)}d ${Math.floor((d % 86400000) / 3600000)}h ${Math.floor((d % 3600000) / 60000)}m ${Math.floor((d % 60000) / 1000)}s`;
@@ -746,6 +750,7 @@
         function abrirModalPai() { document.getElementById("modalPai").style.display = "flex"; }
         function fecharModalPai() { document.getElementById("modalPai").style.display = "none"; }
 
+        // --- LÓGICA DE ARRASTAR O LAÇO (CARTA) ---
         const laco = document.getElementById("laco-fita"), envelope = document.getElementById("envelope-magico");
         let startX = 0, currentX = 0, isDragging = false, cartaJaFoiAberta = false;
 
